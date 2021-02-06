@@ -1,0 +1,13 @@
+version: '3.7'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/startlens
+      - ./log_data:/startlens/log
+    tty: true
+    stdin_open: true
+    command: /bin/bash
