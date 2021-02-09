@@ -2,5 +2,7 @@
 /log_data
 __pycache__
 .env
-tmp/
+tmp/checkpoint/*
+tmp/hdf5/*
+tmp/tflite/*
 .vscode

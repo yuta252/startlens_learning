@@ -84,43 +84,73 @@ class S3Object(object):
         aws_secret_access_key: str
             AWS secret access key which has access to S3 resource
         """
-        self.file_path = file_path
+        self._file_path = file_path
         self.client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
         self.bucket = settings.bucket
+
+    @property
+    def file_path(self):
+        return self._file_path
+
+    @file_path.setter
+    def file_path(self, file_path):
+        self._file_path = file_path
     
     def get_class_label(self) -> int:
         """Obtain class label for training data
         Returns: int
             class label based on file path
         """
-        return int(self.file_path.split('/')[-2])
+        return int(self._file_path.split('/')[-2])
 
     def download_image(self) -> None:
         """Download image file to a designated directory"""
-        file_name = os.path.join(DOWNLOAD_DIR, self.file_path.split('/')[-1])
+        file_name = os.path.join(DOWNLOAD_DIR, self._file_path.split('/')[-1])
         try:
-            self.client.download_file(self.bucket, self.file_path, file_name)
+            self.client.download_file(self.bucket, self._file_path, file_name)
         except botocore.exceptions.ClientError as e:
-            logger.error({'action': 'download_image', 'status': 'fail', 'file_path': self.file_path, 'message': e})
+            logger.error({'action': 'download_image', 'status': 'fail', 'file_path': self._file_path, 'message': e})
             raise
-        logger.debug({'action': 'download_image', 'status': 'success', 'file_path': self.file_path, 'message': 'success to download file'})
+        logger.debug({'action': 'download_image', 'status': 'success', 'file_path': self._file_path, 'message': 'success to download file'})
 
-    def get_bytes_image_on_memory(self):
+    def get_bytes_image_on_memory(self) -> str:
         """Get image binary image data and load on memory
         Returns: str
             Image data in byte format
         """
         try:
-            response = self.client.get_object(Bucket=self.bucket, Key=self.file_path)
+            response = self.client.get_object(Bucket=self.bucket, Key=self._file_path)
             if int(response['ResponseMetadata']['HTTPStatusCode']) >= 400:
                 raise S3ObjectReadError
         except botocore.exceptions.ClientError as e:
-            logger.error({'action': 'get_binary_image', 'status': 'fail', 'file_path': self.file_path, 'message': e})
+            logger.error({'action': 'get_binary_image', 'status': 'fail', 'file_path': self._file_path, 'message': e})
             raise
         except S3ObjectReadError as e:
-            logger.error({'action': 'get_binary_image', 'status': 'fail', 'file_path': self.file_path, 'message': e})
+            logger.error({'action': 'get_binary_image', 'status': 'fail', 'file_path': self._file_path, 'message': e})
             raise
-        logger.debug({'action': 'get_binary_image', 'status': 'success', 'file_path': self.file_path, 'message': 'success to get image'})
         bytes_image = response['Body'].read()
         io_image = io.BytesIO(bytes_image)
         return io_image
+
+    def upload_file(self, uploaded_file_path) -> bool:
+        """Upload file to S3
+
+        Parameters
+        ----------
+        uploaded_file_path: str
+            file to upload
+        Returns: bool
+            If return True, succeed to upload file
+        """
+        try:
+            self.client.upload_file(uploaded_file_path, self.bucket, self._file_path)
+        except botocore.exceptions.ClientError as e:
+            logger.error({
+                'action': 'upload_file',
+                'status': 'fail',
+                'file_path': self._file_path,
+                'file_name': uploaded_file_path,
+                'message': e})
+            raise
+        logger.info({'action': 'upload_file', 'status': 'success', 'file_path': self._file_path, 'message': 'success to upload file'})
+        return True

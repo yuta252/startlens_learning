@@ -6,6 +6,7 @@ from PIL import Image
 
 import constants
 from fetch.resource import S3Object
+import settings
 
 
 logger = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ class GenerateSample(object):
         Returns: ndarray
             image data converted to RGB array(shape: 224x224x3)
         """
-        s3_object = S3Object(file_path)
+        s3_object = S3Object(file_path, aws_access_key_id=settings.aws_access_key_id, aws_secret_access_key=settings.aws_secret_access_key)
         io_image = s3_object.get_bytes_image_on_memory()
         pil_image = Image.open(io_image).convert('RGB')
         pil_image = pil_image.resize((int(constants.IMAGE_SIZE), int(constants.IMAGE_SIZE)))
