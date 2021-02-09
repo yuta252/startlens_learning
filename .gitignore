@@ -1,2 +1,6 @@
 /log
 /log_data
+__pycache__
+.env
+tmp/
+.vscode
