@@ -6,7 +6,9 @@ botocore==1.20.3
 cachetools==4.2.1
 certifi==2020.12.5
 chardet==4.0.0
+click==7.1.2
 flake8==3.8.4
+Flask==1.1.2
 flatbuffers==1.12
 gast==0.3.3
 google-auth==1.25.0
@@ -17,10 +19,13 @@ h5py==2.10.0
 idna==2.10
 importlib-metadata==3.4.0
 iniconfig==1.1.1
+itsdangerous==1.1.0
+Jinja2==2.11.3
 jmespath==0.10.0
 joblib==1.0.0
 Keras-Preprocessing==1.1.2
 Markdown==3.3.3
+MarkupSafe==1.1.1
 mccabe==0.6.1
 numpy==1.19.5
 oauthlib==3.1.0
@@ -52,6 +57,7 @@ tensorflow-estimator==2.4.0
 termcolor==1.1.0
 threadpoolctl==2.1.0
 toml==0.10.2
+tqdm==4.56.2
 typing-extensions==3.7.4.3
 urllib3==1.26.3
 Werkzeug==1.0.1

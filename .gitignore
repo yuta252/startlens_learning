@@ -5,4 +5,6 @@ __pycache__
 tmp/checkpoint/*
 tmp/hdf5/*
 tmp/tflite/*
+tmp/knn/*
+tmp/csv/*
 .vscode

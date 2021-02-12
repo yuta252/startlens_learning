@@ -10,9 +10,12 @@ import settings
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler('log/train/input_generator.log')
+logger.addHandler(handler)
 
 
-BATCH_SIZE = 32
+BATCH_SIZE = 8
 
 
 class GenerateSample(object):
@@ -98,6 +101,7 @@ class GenerateSample(object):
             generate 3 sample data (including an anchor, a positive and a negative sample) as generator
         """
         while True:
+            logger.debug({'action': 'generate', 'status': 'start', 'message': 'start to generate batch samples'})
             list_positive_examples_1 = []
             list_negative_examples = []
             list_positive_examples_2 = []
@@ -116,9 +120,33 @@ class GenerateSample(object):
                 list_positive_examples_1.append(positive_example_1_img)
                 list_negative_examples.append(negative_example_img)
                 list_positive_examples_2.append(positive_example_2_img)
+                logger.debug({'action': 'generate', 'positive_class': positive_class, 'negative_class': negative_class, 'batch': i})
 
             label = None
+            logger.debug({'action': 'generate', 'status': 'end', 'message': 'finish to generate batch sampels'})
             yield ({
                 'anchor_input': np.array(list_positive_examples_1),
                 'positive_input': np.array(list_positive_examples_2),
                 'negative_input': np.array(list_negative_examples)}, label)
+    
+    def generate_image(self, batch_size=8):
+        i = 0
+        images = []
+        classes = []
+        for file_path, class_ in self.file_class_mapping.items():
+            if i == 0:
+                images = []
+                classes = []
+            i += 1
+            image = self.read_and_resize(file_path)
+            images.append(image)
+            classes.append(class_)
+            if i == batch_size:
+                i = 0
+                images = np.array(images)
+                yield classes, images
+        # If finish to extract from map and batch data remains, output the rest of the data
+        if i != 0:
+            images = np.array(images)
+            yield classes, images
+        # raise StopIteration

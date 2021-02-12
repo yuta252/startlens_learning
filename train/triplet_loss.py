@@ -1,3 +1,4 @@
+import csv
 import datetime
 import logging
 import os
@@ -8,9 +9,11 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 from tensorflow.keras.layers import Input, Dense, Dropout, Lambda
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.optimizers import Adam
+from tqdm import tqdm
 
+from app.model.knn import Hdf5Model, CsvModel
 import constants
 from fetch.resource import S3Object
 import settings
@@ -28,18 +31,18 @@ now = datetime.datetime.now()
 strf_time = now.strftime("%Y%m%d_%H%M%S")
 
 EMBEDDING_DIM = 50
-EPOCH = 4
+EPOCH = 6
 # steps_per_epoch is total number of batch samples genereated by the generator between an epoch and next epoch
 # unique samples data divided by batch size in general
-STEPS_PER_EPOCH = 6
+STEPS_PER_EPOCH = 4
 VALIDATION_STEPS = 2
 
 PATH_TRAIN = os.path.join(settings.base_dir, 'tmp', 'train')
 PATH_MODEL_CHECKPINT = os.path.join(settings.base_dir, 'tmp', 'checkpoint', f'triplet_chkpt_{strf_time}.hdf5')
 PATH_MODEL_TMP = os.path.join(settings.base_dir, 'tmp', 'hdf5', f'embedding_{strf_time}.hdf5')
 PATH_TFMODEL_TMP = os.path.join(settings.base_dir, 'tmp', 'tflite', f'embedding_{strf_time}.tflite')
-PATH_MODEL_DIST = os.path.join(settings.bucket, 'hdf5', f'embedding_{strf_time}.hdf5')
-PATH_TFMODEL_DIST = os.path.join(settings.bucket, 'hdf5', f'embedding_{strf_time}.tflite')
+PATH_MODEL_DIST = os.path.join('hdf5', f'embedding_{strf_time}.hdf5')
+PATH_TFMODEL_DIST = os.path.join('tflite', f'embedding_{strf_time}.tflite')
 
 
 class TripletLoss(object):
@@ -172,3 +175,25 @@ class TripletLoss(object):
         else:
             logger.info({'action': 'train', 'status': 'failed to save model'})
         logger.info({'action': 'train', 'status': 'end training'})
+
+    def predict(self, file_paths: list, spot_id: int):
+        file_class_mapping_train = {file_path: get_class_label_from_path(file_path) for file_path in file_paths}
+        
+        embedding_model, triplet_model = self.get_model()
+        hdf5_model = Hdf5Model()
+        embedding_model = load_model(hdf5_model.file_path)
+
+        samples = GenerateSample(file_class_mapping_train)
+        
+        logger.info({'action': 'predict', 'status': 'start', 'spot_id': spot_id, 'message': 'start to write csv file'})
+        
+        result_predicts = []
+        result_classes = []
+        for classes, images in tqdm(samples.generate_image(batch_size=8)):
+            predicts = embedding_model.predict(images)
+            predicts = predicts.tolist()
+            result_predicts += predicts
+            result_classes += classes
+
+        csv_model = CsvModel(spot_id=spot_id)
+        csv_model.save_all_data(classes=result_classes, images=result_predicts)
