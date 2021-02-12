@@ -2,6 +2,7 @@ import logging
 from optparse import OptionParser
 
 from app.controllers.training import TrainImage
+from app.controllers.webserver import start
 
 
 formatter = '%(asctime)s %(name)s %(lineno)d [%(levelname)s][%(funcName)s] %(message)s'
@@ -21,6 +22,7 @@ def main():
         print(args)
     elif options.mode == 'knn':
         # TODO: call knn training by spot
+        start()
         print('KNN train')
     elif options.mode == 'inference':
         # TODO: call KNN infference and activate API server
@@ -31,6 +33,13 @@ def main():
 
 if __name__ == '__main__':
     # main()
+    # t = TrainImage()
+    # t.train_model()
+    # start()
+    # model = KnnModel()
+    # print(model.hdf5_file)
     t = TrainImage()
-    t.train_model()
+    t.train_knn_model(spot_id=1)
+
+
 

@@ -28,7 +28,7 @@ class S3AccessDeniedError(Exception):
 class S3Resource(object):
     """Manage S3 resource class to get S3 basic information"""
     def __init__(self, aws_access_key_id=None, aws_secret_access_key=None):
-        """Instantiate S3 resource class
+        """Instantiate S3Resource class
         
         Parameters
         ----------
@@ -84,6 +84,8 @@ class S3Object(object):
         aws_secret_access_key: str
             AWS secret access key which has access to S3 resource
         """
+        if aws_access_key_id is None or aws_secret_access_key is None:
+            logger.warning({'action': 'S3Object.__init__', 'message': 'aws access key or secret access key is not set'})
         self._file_path = file_path
         self.client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
         self.bucket = settings.bucket
@@ -103,15 +105,15 @@ class S3Object(object):
         """
         return int(self._file_path.split('/')[-2])
 
-    def download_image(self) -> None:
+    def download_file(self, download_dir: str) -> None:
         """Download image file to a designated directory"""
-        file_name = os.path.join(DOWNLOAD_DIR, self._file_path.split('/')[-1])
+        file_name = os.path.join(download_dir, self._file_path.split('/')[-1])
         try:
             self.client.download_file(self.bucket, self._file_path, file_name)
         except botocore.exceptions.ClientError as e:
-            logger.error({'action': 'download_image', 'status': 'fail', 'file_path': self._file_path, 'message': e})
+            logger.error({'action': 'download_file', 'status': 'fail', 'file_path': self._file_path, 'message': e})
             raise
-        logger.debug({'action': 'download_image', 'status': 'success', 'file_path': self._file_path, 'message': 'success to download file'})
+        logger.debug({'action': 'download_file', 'status': 'success', 'file_path': self._file_path, 'message': 'success to download file'})
 
     def get_bytes_image_on_memory(self) -> str:
         """Get image binary image data and load on memory

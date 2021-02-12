@@ -19,3 +19,8 @@ bucket = conf['storage']['bucket']
 prefix_key = conf['storage']['key']
 aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+port = conf['webserver']['port']
+
+hdf5_file_name = conf['hdf5']['name']
+tflite_file_name = conf['tflite']['name']

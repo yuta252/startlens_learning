@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
     volumes:
       - .:/startlens
       - ./log_data:/startlens/log
