@@ -1,4 +1,3 @@
-import csv
 import datetime
 import logging
 import os
@@ -176,7 +175,7 @@ class TripletLoss(object):
             logger.info({'action': 'train', 'status': 'failed to save model'})
         logger.info({'action': 'train', 'status': 'end training'})
 
-    def predict(self, file_paths: list, spot_id: int):
+    def predict(self, file_paths: list, spot_id: int, is_exhibit: bool):
         file_class_mapping_train = {file_path: get_class_label_from_path(file_path) for file_path in file_paths}
         
         embedding_model, triplet_model = self.get_model()
@@ -196,4 +195,7 @@ class TripletLoss(object):
             result_classes += classes
 
         csv_model = CsvModel(spot_id=spot_id)
-        csv_model.save_all_data(classes=result_classes, images=result_predicts)
+        if not is_exhibit:
+            csv_model.save_all_data(classes=result_classes, images=result_predicts)
+        else:
+            csv_model.add_new_data(classes=result_classes, images=result_predicts)

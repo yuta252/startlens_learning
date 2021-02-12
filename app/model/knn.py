@@ -158,8 +158,21 @@ class CsvModel(FileModel):
         s3_client.upload_file(self.file_path)
         logger.info({'action': 'save_all_data', 'status': 'end', 'spot_id': self.spot_id, 'message': 'finish to uplaod csv to S3'})
 
-    def add_new_data(self):
-        # TODO: 新しくベクトルデータを追加する　
+    def add_new_data(self, classes: list, images: list):
+        """Save class and converted vector data to csv file with each exhibit update
+        """
+        logger.info({'action': 'save_new_data', 'status': 'start', 'spot_id': self.spot_id, 'message': 'start to write csv file'})
+        with open(self.file_path, 'a') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=self.columns)
+            writer.writeheader()
+
+            for class_, image in zip(classes, images):
+                writer.writerow({
+                    self.columns_class: class_,
+                    self.columns_vector: image
+                })
+                logger.info({'action': 'save_new_data', 'status': 'writing', 'class': class_, 'message': 'writing class, image vector as csv row'})
+        logger.info({'action': 'save_new_data', 'status': 'end', 'spot_id': self.spot_id, 'message': 'finish to write csv file'})
         return None
 
 
@@ -200,3 +213,29 @@ class KnnModel(FileModel):
         with open(self.file_path, 'wb') as pkl_file:
             pickle.dump(model_obj, pkl_file)
         logger.debug({'action': 'save_train_data', 'status': 'end', 'knn_file_path': self.file_path})
+
+    def load_trained_model(self):
+        logger.debug({'action': 'load_train_data', 'status': 'start', 'knn_file_path': self.file_path})
+        with open(self.file_path, 'rb') as pkl_file:
+            neighbor = pickle.load(pkl_file)
+        logger.debug({'action': 'load_train_data', 'status': 'end', 'knn_file_path': self.file_path})
+        return neighbor
+
+    def inference(self, input_data: list):
+        neighbor = self.load_trained_model()
+        distances, neighbors = neighbor.kneighbors(input_data)
+        distances, neighbors = distances.tolist(), neighbors.tolist()
+
+        csv_file = CsvModel(self.spot_id)
+        classes, vector_images = csv_file.laod_data()
+
+        result_list = []
+        for distance, neighbor in zip(distances, neighbors):
+            for d, n in zip(distance, neighbor):
+                result_list.append((int(classes[n]), d))
+        result_list.sort(key=lambda x: x[1])
+        return result_list
+
+
+        
+

@@ -149,4 +149,3 @@ class GenerateSample(object):
         if i != 0:
             images = np.array(images)
             yield classes, images
-        # raise StopIteration
