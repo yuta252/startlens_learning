@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO, format=formatter)
 def main():
     usage = 'usage: %prog [options] arg1 arg2'
     parser = OptionParser(usage=usage)
-    parser.add_option('-m', '--mode', action='store', type='string', dest='mode', help='Set to activate mode')
+    parser.add_option('-m', '--mode', action='store', type='string', dest='mode', default='server', help='Set to activate mode')
 
     options, args = parser.parse_args()
 
