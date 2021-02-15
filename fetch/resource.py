@@ -49,6 +49,11 @@ class S3Resource(object):
         self.bucket = self.resource.Bucket(settings.bucket)
 
     def get_all_buckets(self) -> list:
+        """Get all bucket name
+
+        Returns: list
+            the list of all bucket name
+        """
         buckets = []
         for bucket in self.resource.buckets.all():
             logger.debug({'action': 'get_all_buckets', 'bucket': bucket.name})
@@ -56,6 +61,11 @@ class S3Resource(object):
         return buckets
 
     def get_all_objects(self) -> list:
+        """Get all resource path
+
+        Returns: list
+            the list of all resource key in the bucket
+        """
         return [obj.key for obj in self.bucket.objects.all()]
 
     def get_filtered_by_prefix(self, prefix=settings.prefix_key) -> list:
@@ -65,6 +75,10 @@ class S3Resource(object):
         ----------
         prefix: str
             Prefix key to filter S3 object
+
+        Returns: list
+            file path of S3 resource
+            ex. ["upload/picture/1/3/xxxxx.jp", ...]
         """
         return [obj.key for obj in self.bucket.objects.filter(Prefix=prefix)]
 
@@ -85,7 +99,11 @@ class S3Object(object):
             AWS secret access key which has access to S3 resource
         """
         if aws_access_key_id is None or aws_secret_access_key is None:
-            logger.warning({'action': 'S3Object.__init__', 'message': 'aws access key or secret access key is not set'})
+            logger.warning({
+                'action': 'S3Object.__init__',
+                'message': 'aws access key or secret access key is not set'
+            })
+            raise S3AccessDeniedError
         self._file_path = file_path
         self.client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
         self.bucket = settings.bucket
@@ -100,13 +118,18 @@ class S3Object(object):
     
     def get_class_label(self) -> int:
         """Obtain class label for training data
+
         Returns: int
             class label based on file path
         """
         return int(self._file_path.split('/')[-2])
 
     def download_file(self, download_dir: str) -> None:
-        """Download image file to a designated directory"""
+        """Download image file to a designated directory
+
+        Parameters: str
+            download directory. File name is saved same as S3 object key
+        """
         file_name = os.path.join(download_dir, self._file_path.split('/')[-1])
         try:
             self.client.download_file(self.bucket, self._file_path, file_name)
@@ -117,6 +140,7 @@ class S3Object(object):
 
     def get_bytes_image_on_memory(self) -> str:
         """Get image binary image data and load on memory
+
         Returns: str
             Image data in byte format
         """

@@ -1,14 +1,19 @@
+import os
 import logging
 
 import numpy as np
 
 from app.model.knn import KnnModel
+import settings
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler('log/app/controller/inference.log')
 logger.addHandler(handler)
+
+
+PATH_KNN_DIR = os.path.join(settings.base_dir, 'tmp', 'knn')
 
 
 class InferenceController(object):
@@ -20,9 +25,9 @@ class InferenceController(object):
         # preprocess vector data
         data = np.array(data)
         data = data.reshape(1, -1)
-        knn_model = KnnModel(spot_id=self.spot_id)
+        knn_model = KnnModel(spot_id=self.spot_id, is_write=False, knn_dir=PATH_KNN_DIR)
         result_list = knn_model.inference(input_data=data)
-        # TODO: 推論結果の距離により予測結果から除外する処理を検討
+        # TODO: To be considered implementing function that exclude the prediction results by the point-to-point distance
         result_classes = []
         for result in result_list:
             result_classes.append(result[0])
