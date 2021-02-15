@@ -87,6 +87,7 @@ toml==0.10.2
 tqdm==4.56.2
 typing-extensions==3.7.4.3
 urllib3==1.26.3
+uWSGI==2.0.19.1
 websocket-client==0.57.0
 Werkzeug==1.0.1
 wrapt==1.12.1
