@@ -4,7 +4,6 @@ import logging
 import numpy as np
 from PIL import Image
 
-import constants
 from fetch.resource import S3Object
 import settings
 
@@ -16,9 +15,11 @@ logger.addHandler(handler)
 
 
 BATCH_SIZE = 8
+IMAGE_SIZE = 224
 
 
 class GenerateSample(object):
+    """GenerateSample class"""
     def __init__(self, file_class_mapping):
         """Instantiate generate sample class
         
@@ -79,7 +80,7 @@ class GenerateSample(object):
         s3_object = S3Object(file_path, aws_access_key_id=settings.aws_access_key_id, aws_secret_access_key=settings.aws_secret_access_key)
         io_image = s3_object.get_bytes_image_on_memory()
         pil_image = Image.open(io_image).convert('RGB')
-        pil_image = pil_image.resize((int(constants.IMAGE_SIZE), int(constants.IMAGE_SIZE)))
+        pil_image = pil_image.resize((IMAGE_SIZE, IMAGE_SIZE))
         return np.array(pil_image, dtype="float32")
 
     def augment(self, image_array):
@@ -130,6 +131,16 @@ class GenerateSample(object):
                 'negative_input': np.array(list_negative_examples)}, label)
     
     def generate_image(self, batch_size=8):
+        """Generator for triplet network prediction
+
+        Parameters
+        ----------
+        batch_size: int
+            batch size to input triplet network
+
+        Returns: tuple(list, list)
+            generate 2 lists, the list of classification class and the list of image converted to RGB array
+        """
         i = 0
         images = []
         classes = []
@@ -149,4 +160,3 @@ class GenerateSample(object):
         if i != 0:
             images = np.array(images)
             yield classes, images
-        # raise StopIteration
