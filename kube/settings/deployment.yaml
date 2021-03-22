@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  namespace: webapp
+  labels:
+    app: learning
+  name: learning
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: learning
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: learning
+    spec:
+      containers:
+      - image: 328517882653.dkr.ecr.ap-northeast-1.amazonaws.com/startlens/learning:v1.0
+        imagePullPolicy: Always
+        name: webapp
+        command: ["uwsgi", "--http", "0.0.0.0:3000", "--wsgi-file", "app/controllers/webserver.py", "--callable", "app"]
+        ports:
+        - containerPort: 3000
+        resources: {}
+status: {}

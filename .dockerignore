@@ -1,10 +1,8 @@
-/log
 /log_data
 __pycache__
 .pytest_cache
 .env
 tmp/checkpoint/*
-tmp/hdf5/*
 tmp/tflite/*
 tmp/knn/*
 tmp/csv/*
