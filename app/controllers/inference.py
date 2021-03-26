@@ -24,7 +24,9 @@ class InferenceController(object):
     def inference_knn_model(self, data: list) -> list:
         # preprocess vector data
         data = np.array(data)
+        logger.info({'action': 'inference_knn_model', 'data': data})
         data = data.reshape(1, -1)
+        logger.info({'action': 'inference_knn_model', 'data': data})
         knn_model = KnnModel(spot_id=self.spot_id, is_write=False, knn_dir=PATH_KNN_DIR)
         result_list = knn_model.inference(input_data=data)
         # TODO: To be considered implementing function that exclude the prediction results by the point-to-point distance

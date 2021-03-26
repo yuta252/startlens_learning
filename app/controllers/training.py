@@ -35,6 +35,7 @@ class TrainController(object):
     def save_image_predict(self):
         prefix = os.path.join(settings.prefix_key, str(self.spot_id)) + '/'
         file_paths = self.resource.get_filtered_by_prefix(prefix=prefix)
+        logger.info({'action': 'save_image_predict', 'file_paths': file_paths})
         triplet_model = TripletLoss()
         triplet_model.predict(file_paths, self.spot_id, is_exhibit=False)
 
@@ -51,7 +52,9 @@ class TrainController(object):
         # train
         vector_images = np.array(vector_images)
         neighbor = NearestNeighbors(n_neighbors=4)
+        logger.info({'action': 'train_knn_model', 'status': 'start', 'message': 'start to train knn model'})
         neighbor.fit(vector_images)
+        logger.info({'action': 'train_knn_model', 'status': 'end', 'message': 'finished to train knn model'})
         # save binary data as pickle
         knn_model = KnnModel(spot_id=self.spot_id, is_write=True, knn_dir=PATH_KNN_DIR)
         knn_model.save_trained_model(neighbor)

@@ -6,10 +6,10 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3100:3100"
     volumes:
       - .:/startlens
       - ./log_data:/startlens/log
     tty: true
     stdin_open: true
-    command: ["uwsgi", "--http", "0.0.0.0:3000", "--wsgi-file", "app/controllers/webserver.py", "--callable", "app"]
+    command: ["uwsgi", "--http", "0.0.0.0:3100", "--wsgi-file", "app/controllers/webserver.py", "--callable", "app"]

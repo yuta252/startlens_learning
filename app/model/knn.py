@@ -174,7 +174,7 @@ class CsvModel(FileModel):
         logger.info({'action': 'save_all_data', 'status': 'end', 'spot_id': self.spot_id, 'message': 'finish to write csv file'})
 
         # Save csv to S3 as backup
-        logger.info({'action': 'save_all_data', 'status': 'start', 'spot_id': self.spot_id, 'message': 'finish to upload csv to S3'})
+        logger.info({'action': 'save_all_data', 'status': 'start', 'spot_id': self.spot_id, 'message': 'start to upload csv to S3'})
         s3_key = os.path.join('csv', self.file_name)
         s3_client = S3Object(s3_key,
                              aws_access_key_id=settings.aws_access_key_id,
@@ -204,6 +204,15 @@ class CsvModel(FileModel):
                 })
                 logger.info({'action': 'save_new_data', 'status': 'writing', 'class': class_, 'message': 'writing class, image vector as csv row'})
         logger.info({'action': 'save_new_data', 'status': 'end', 'spot_id': self.spot_id, 'message': 'finish to write csv file'})
+
+        # Save csv to S3 as backup
+        logger.info({'action': 'add_new_data', 'status': 'start', 'spot_id': self.spot_id, 'message': 'start to upload csv to S3'})
+        s3_key = os.path.join('csv', self.file_name)
+        s3_client = S3Object(s3_key,
+                             aws_access_key_id=settings.aws_access_key_id,
+                             aws_secret_access_key=settings.aws_secret_access_key)
+        s3_client.upload_file(self.file_path)
+        logger.info({'action': 'add_new_data', 'status': 'end', 'spot_id': self.spot_id, 'message': 'finish to upload csv to S3'})
 
 
 class KnnModel(FileModel):
@@ -274,6 +283,15 @@ class KnnModel(FileModel):
         with open(self.file_path, 'wb') as pkl_file:
             pickle.dump(model_obj, pkl_file)
         logger.debug({'action': 'save_train_data', 'status': 'end', 'knn_file_path': self.file_path})
+
+        # Save pkl to S3 as backup
+        logger.info({'action': 'save_trained_model', 'status': 'start', 'spot_id': self.spot_id, 'message': 'start to upload pkl to S3'})
+        s3_key = os.path.join('knn', self.file_name)
+        s3_client = S3Object(s3_key,
+                             aws_access_key_id=settings.aws_access_key_id,
+                             aws_secret_access_key=settings.aws_secret_access_key)
+        s3_client.upload_file(self.file_path)
+        logger.info({'action': 'save_trained_model', 'status': 'end', 'spot_id': self.spot_id, 'message': 'finished to upload pkl to S3'})
 
     def load_trained_model(self):
         """Get trained model by each spot
