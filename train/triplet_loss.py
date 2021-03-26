@@ -202,7 +202,7 @@ class TripletLoss(object):
             the flag whether to create csv file for a designated exhibit or all spot exhibits
         """
         file_class_mapping_train = {file_path: get_class_label_from_path(file_path) for file_path in file_paths}
-        
+
         embedding_model, triplet_model = self.get_model()
         hdf5_model = Hdf5Model(hdf5_dir=PATH_HDF5_DIR, hdf5_file_name=settings.hdf5_file_name)
         embedding_model = load_model(hdf5_model.file_path)
@@ -212,6 +212,7 @@ class TripletLoss(object):
         result_predicts = []
         result_classes = []
         for classes, images in tqdm(samples.generate_image(batch_size=8)):
+            logger.info({'action': 'predict', 'classes': classes, 'message': 'classes is predicted'})
             predicts = embedding_model.predict(images)
             predicts = predicts.tolist()
             result_predicts += predicts
@@ -219,6 +220,10 @@ class TripletLoss(object):
 
         csv_model = CsvModel(spot_id=spot_id, is_write=True, csv_dir=PATH_CSV_DIR)
         if not is_exhibit:
+            logger.info({'action': 'predict', 'status': 'start', 'is_exhibit': False, 'message': 'csv file is to be saved'})
             csv_model.save_all_data(classes=result_classes, images=result_predicts)
+            logger.info({'action': 'predict', 'status': 'end', 'is_exhibit': False, 'message': 'csv file is saved'})
         else:
+            logger.info({'action': 'predict', 'status': 'start', 'is_exhibit': True, 'message': 'csv file is to be saved'})
             csv_model.add_new_data(classes=result_classes, images=result_predicts)
+            logger.info({'action': 'predict', 'status': 'end', 'is_exhibit': True, 'message': 'csv file is saved'})

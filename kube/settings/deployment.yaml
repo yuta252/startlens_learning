@@ -19,11 +19,27 @@ spec:
         app: learning
     spec:
       containers:
-      - image: 328517882653.dkr.ecr.ap-northeast-1.amazonaws.com/startlens/learning:v1.0
+      - image: 328517882653.dkr.ecr.ap-northeast-1.amazonaws.com/startlens/learning:v1.0.1
         imagePullPolicy: Always
         name: webapp
         command: ["uwsgi", "--http", "0.0.0.0:3000", "--wsgi-file", "app/controllers/webserver.py", "--callable", "app"]
         ports:
         - containerPort: 3000
         resources: {}
+        env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: s3-config
+                key: aws-access-key-id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: s3-config
+                key: aws-secret-access-key
+          - name: AWS_DEFAULT_REGION
+            valueFrom:
+              secretKeyRef:
+                name: s3-config
+                key: aws-default-region
 status: {}
